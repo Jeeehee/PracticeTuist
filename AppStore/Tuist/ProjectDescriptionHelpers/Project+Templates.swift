@@ -6,40 +6,43 @@ import ProjectDescription
 /// See https://docs.tuist.io/guides/helpers/
 
 public extension Project {
-    static func makeProject(name: String,
-                            product: Product,
-                            infoPlist: InfoPlist,
-                            dependencies: [TargetDependency]) -> Project {
-        let project: Project = .init(
+    static func makeModule(
+        name: String,
+        product: Product,
+        infoPlist: InfoPlist,
+        dependencies: [TargetDependency],
+        hasTest: Bool = true)
+    -> Project {
+        let appTarget = Target(
             name: name,
-            organizationName: "jee",
-            targets: [
-                Target(
-                    name: name,
-                    platform: .iOS,
-                    product: product,
-                    bundleId: "com.jee.appstore",
-                    deploymentTarget: .iOS(targetVersion: "14.0", devices: [.iphone]),
-                    infoPlist: infoPlist,
-                    sources: ["Sources/**"],
-                    resources: ["Resources/**"],
-                    dependencies: dependencies
-                ),
-                Target(
-                    name: "\(name)Tests",
-                    platform: .iOS,
-                    product: .unitTests,
-                    bundleId: "com.jee.appstore",
-                    infoPlist: .default,
-                    sources: ["Tests/**"],
-                    dependencies: [
-                        .target(name: name)
-                    ]
-                )
+            platform: .iOS,
+            product: product,
+            bundleId: "com.jee.appstore",
+            deploymentTarget: .iOS(targetVersion: "14.0", devices: [.iphone]),
+            infoPlist: infoPlist,
+            sources: ["Sources/**"],
+            resources: ["Resources/**"],
+            dependencies: dependencies
+        )
+        
+        let testTarget = Target(
+            name: "\(name)Tests",
+            platform: .iOS,
+            product: .unitTests,
+            bundleId: "com.jee.appstore",
+            infoPlist: .default,
+            sources: ["Tests/**"],
+            dependencies: [
+                .target(name: name)
             ]
         )
+        
+        let targets: [Target] = hasTest ? [appTarget, testTarget] : [appTarget]
 
-        return project
+        return Project(
+            name: name,
+            organizationName: "jee",
+            targets: targets)
     }
     
     /// Helper function to create a framework target and an associated unit test target
